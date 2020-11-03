@@ -25,7 +25,10 @@ FLAME runs the Filter, Quantificiation and Novel Exon Detection by default and a
 ./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene]
 ```
 
-Flame can be run to confirm the 
+Flame can be run to confirm the suggested Splice Site Signals and the suggested Exons:
+```sh
+./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene] -R [Reference.fasta] -B [Shortread.bam]/[Shortread.sam]
+```
 
 ## Flags
 ```sh
