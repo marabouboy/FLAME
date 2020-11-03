@@ -6,31 +6,39 @@ FLAME:fire: is a longread splice variant annotation tool. It allows for:
   - Detection of possible adjecent Splice Site Signal
   - Shortread Sequencing reads.
 
-[//]: <[![NPM Version][npm-image]][npm-url]>
-[//]: <[![Build Status][travis-image]][travis-url]>
-[//]: <[![Downloads Stats][npm-downloads]][npm-url]>
-
-[//]: <![](header.png)>
-
 ## Installation
 
 OS X & Linux:
 
-```sh
-npm install my-crazy-module --save
+```
+git clone https://github.com/marabouboy/FLAME
 ```
 
 ## Usage example
 
 A few motivating and useful examples of how your product can be used. Spice this up with code blocks and potentially more screenshots.
+```sh
+./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene]
+```
 
-_For more examples and usage, please refer to the [Wiki][wiki]._
+## Flags
+```sh
+-I [INPUT.bed]:                     Input file in .bed12 format
+-GTF [AnnotationReference.gtf]:     Reference Annotation file in GTF format
+-G [Gene]:                          Target Gene
+--range [int]:                      Variance Range
+-O [string]:                        Output Prefix
+-R [Reference.fasta]:               Reference in fasta-form to allow for Detection of Adjecent Splice Site Signal 
+-B [Shortread.bam]/[Shortread.sam]: Shortread Sequencing in bam- or sam-format to allow for confirmation of splice site using short read 
+```
+
+For more examples and usage, please refer to the [Wiki][wiki].
 
 ## Development setup
 
 Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
 
-```sh
+```
 make install
 npm test
 ```
@@ -55,11 +63,3 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
 5. Create a new Pull Request
-
-[//]: <<!-- Markdown link & img dfn's -->>
-[//]: <[npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square>
-[//]: <[npm-url]: https://npmjs.org/package/datadog-metrics>
-[//]: <[npm-downloads]: https://img.shields.io/npm/dm/datadog-metrics.svg?style=flat-square>
-[//]: <[travis-image]: https://img.shields.io/travis/dbader/node-datadog-metrics/master.svg?style=flat-square>
-[//]: <[travis-url]: https://travis-ci.org/dbader/node-datadog-metrics>
-[//]: <[wiki]: https://github.com/yourname/yourproject/wiki>
