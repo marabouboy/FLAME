@@ -16,23 +16,25 @@ git clone https://github.com/marabouboy/FLAME
 
 ## Usage example
 
-A few motivating and useful examples of how your product can be used. Spice this up with code blocks and potentially more screenshots.
+FLAME runs the Filter, Quantificiation and Novel Exon Detection by default and adheres to the following syntax:
 ```sh
 ./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene]
 ```
 
+Flame can be run to confirm the 
+
 ## Flags
 ```sh
--I [INPUT.bed]:                     Input file in .bed12 format
--GTF [AnnotationReference.gtf]:     Reference Annotation file in GTF format
--G [Gene]:                          Target Gene
---range [int]:                      Variance Range
--O [string]:                        Output Prefix
--R [Reference.fasta]:               Reference in fasta-form to allow for Detection of Adjecent Splice Site Signal 
--B [Shortread.bam]/[Shortread.sam]: Shortread Sequencing in bam- or sam-format to allow for confirmation of splice site using short read 
+-I [INPUT.bed]:                     #Input file in .bed12 format
+-GTF [AnnotationReference.gtf]:     #Reference Annotation file in GTF format
+-G [Gene]:                          #Target Gene
+--range [int]:                      #Variance Range
+-O [string]:                        #Output Prefix
+-R [Reference.fasta]:               #Reference in fasta-form to allow for Detection of Adjecent Splice Site Signal 
+-B [Shortread.bam]/[Shortread.sam]: #Shortread Sequencing in bam- or sam-format to allow for confirmation of splice site using short read 
 ```
 
-For more examples and usage, please refer to the [Wiki][wiki].
+[//]: <For more examples and usage, please refer to the [Wiki](https://test.galaxyproject.org]).>
 
 ## Development setup
 
