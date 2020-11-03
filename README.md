@@ -6,6 +6,10 @@ FLAME:fire: is a longread splice variant annotation tool. It allows for:
   - Detection of possible adjecent Splice Site Signal
   - Shortread Sequencing reads.
 
+## Requirements
+- Python 3.6
+- pysam
+
 ## Installation
 
 OS X & Linux:
