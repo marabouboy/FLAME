@@ -34,7 +34,7 @@ Flame can be run to confirm the
 -B [Shortread.bam]/[Shortread.sam]: #Shortread Sequencing in bam- or sam-format to allow for confirmation of splice site using short read 
 ```
 
-[//]: <For more examples and usage, please refer to the [Wiki](https://test.galaxyproject.org]).>
+[//]: <For more examples and usage, please refer to the [Wiki].>
 
 ## Development setup
 
@@ -52,7 +52,7 @@ npm test
 
 ## Meta
 
-Your Name – Alan.baek1@gmail.com
+Alan Bäckerholm – Alan.baek1@gmail.com
 
 Distributed under the MIT license. See ``LICENSE`` for more information.
 
