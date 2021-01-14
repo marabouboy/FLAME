@@ -4,8 +4,8 @@ It allows for:
 - Filtering and quantification of splice variants and exon connectivity through an [Adjecency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
 - Detection of novel exons sites or exon variants through frequency
 - Confirmation of said novel exons sites through the use of:
-  - Detection of possible adjecent Splice Site Signal
-  - Shortread sequencing reads.
+  - Detection of possible adjecent Splice Site Signals
+  - Shortread sequencing reads
 
 ## Requirements
 - Python 3.6
