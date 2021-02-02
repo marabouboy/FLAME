@@ -44,15 +44,6 @@ Flame can be run to confirm the suggested Splice Site Signals and the suggested 
 
 [//]: <For more examples and usage, please refer to the [Wiki].>
 
-## Development setup
-
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
-
-```
-make install
-npm test
-```
-
 ## Release History
 
 * 0.0.1
