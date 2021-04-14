@@ -82,9 +82,10 @@ def CREATEREFFUNC(CREATEREFRINPUT, CREATEREFNAME): #CHANGE IT SO IT DOES NOT MAT
 
 
 #Central Filter function that will sort the reads into two different lists (FILTERANNOTATEDOUTPUT, FILTERINCONGRUENTOUTPUT) depending if they have only contain perfectly matching exons to the reference or if they have a "faulty" exon.
-def FILTERFUNC(FILTERINPUT1, FILTERINPUT2, REF, FILTERRANGESIZE):
+def FILTERFUNC(FILTERINPUT1, REF, FILTERRANGESIZE):
     #-----------Outside counters and variables-----------#
-    Flame_Filter_PROGRESSMAX = sum(1 for Flame_Filter_LINE in FILTERINPUT2)
+    Flame_Filter_PROGRESSMAX = sum(1 for Flame_Filter_LINE in FILTERINPUT1)
+    FILTERINPUT1.seek(0, 0)
     Flame_Filter_PROGRESSCOUNT1 = 0
     Flame_Filter_PROGRESSCOUNT2 = 0
     Flame_Filter_EXONCOUNTER = 0 
@@ -253,74 +254,103 @@ def TRANSLATEFUNC(REF, TRANSLATERANGESIZE, TRANSLATEANNOTATEDINPUT = 0, TRANSLAT
         Flame_Translate_BOOLEAN = False
         Flame_Translate_INCONGRUENT = []
         #-----------The Function Itself-----------#
-        #Going through each faulty read. This is reliant on that either you have sorted the reads between "Annotated" and "Incongruent" from the previous function (FILTERFUNC) or that you have a reliable dataset to use.
-        for Flame_Translate_SINGLE_READ in TRANSLATEINCONGRUENTINPUT: 
-            #For ease of use: Singling out all the relevant information for the bed12 read:
-            Flame_Translate_STRTPNT = int(Flame_Translate_SINGLE_READ.split("\t")[1])
-            Flame_Translate_SINGLE_READ_STRT_ALL = Flame_Translate_SINGLE_READ.split("\t")[11]
-            Flame_Translate_SINGLE_READ_LEN_ALL = Flame_Translate_SINGLE_READ.split("\t")[10]
-            Flame_Translate_SINGLE_READ_COUNT = int(Flame_Translate_SINGLE_READ.split("\t")[9])
-            Flame_Translate_Counter3 = 0
-            Flame_Translate_Counter4 = 0
-            Flame_Translate_TEMPORARY_STRING = "" #Reset the temporary string into an empty one.
-            #Iterate through every single exon (Flame_Translate_COUNT1)
-            for Flame_Translate_COUNT1 in range(Flame_Translate_SINGLE_READ_COUNT): 
+        #If-statement that checks whether the reference is empty to account for an empty reference scenario:
+        if len(REF) > 0:
+            #Going through each faulty read. This is reliant on that either you have sorted the reads between "Annotated" and "Incongruent" from the previous function (FILTERFUNC) or that you have a reliable dataset to use.
+            for Flame_Translate_SINGLE_READ in TRANSLATEINCONGRUENTINPUT:
+                #For ease of use: Singling out all the relevant information for the bed12 read:
+                Flame_Translate_STRTPNT = int(Flame_Translate_SINGLE_READ.split("\t")[1])
+                Flame_Translate_SINGLE_READ_STRT_ALL = Flame_Translate_SINGLE_READ.split("\t")[11]
+                Flame_Translate_SINGLE_READ_LEN_ALL = Flame_Translate_SINGLE_READ.split("\t")[10]
+                Flame_Translate_SINGLE_READ_COUNT = int(Flame_Translate_SINGLE_READ.split("\t")[9])
                 Flame_Translate_Counter3 = 0
                 Flame_Translate_Counter4 = 0
-                Flame_Translate_SPLICESTART = (int(Flame_Translate_SINGLE_READ_STRT_ALL.split(",")[Flame_Translate_COUNT1]) +
-                                               Flame_Translate_STRTPNT)
-                Flame_Translate_SPLICELEN = int(Flame_Translate_SINGLE_READ_LEN_ALL.split(",")[Flame_Translate_COUNT1])
-                Flame_Translate_SPLICESTOP = (Flame_Translate_SPLICESTART + Flame_Translate_SPLICELEN)
-                #For ease of use: Collapsing the characteristics into a single list.
-                Flame_Translate_SPLICECOMB = [Flame_Translate_SPLICESTART,
-                                              Flame_Translate_SPLICELEN,
-                                              Flame_Translate_SPLICESTOP]
-                #Forcing to run through all the Exons specified in the reference unless match in which it breaks the loop in order to optimize the running time.
-                while Flame_Translate_Counter4 != len(REF):
-                    #If statement that will be flagged if the Exon matches the reference +- variance-variable (TRANSLATERANGESIZE). Linked with line 289.
-                    if ((REF[Flame_Translate_Counter3][1]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[0] <= REF[Flame_Translate_Counter3][1]+TRANSLATERANGESIZE) and
-                        (REF[Flame_Translate_Counter3][2]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[1] <= REF[Flame_Translate_Counter3][2]+TRANSLATERANGESIZE) and
-                        (REF[Flame_Translate_Counter3][3]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[2] <= REF[Flame_Translate_Counter3][3]+TRANSLATERANGESIZE)):
-                        Flame_Translate_Counter2 += 1
-                        Flame_Translate_TEMPORARY_STRING += str(REF[Flame_Translate_Counter3][0] + ",") #FIX: Make it more efficient by changing it into a list with ".join" function that also allows for the removal of the last element. list1 = ['1','2','3','4'], s = "-", s = s.join(list1) 
-                        Flame_Translate_Counter3 += 1
-                        Flame_Translate_BOOLEAN = False 
-                        break
-                    #If otherwise, keep looping until you reach the end of the reference file. Linked with line 281.
-                    elif ((not (REF[Flame_Translate_Counter3][1]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[0] <= REF[Flame_Translate_Counter3][1]+TRANSLATERANGESIZE)) or
-                          (not (REF[Flame_Translate_Counter3][2]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[1] <= REF[Flame_Translate_Counter3][2]+TRANSLATERANGESIZE)) or
-                          (not (REF[Flame_Translate_Counter3][3]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[2] <= REF[Flame_Translate_Counter3][3]+TRANSLATERANGESIZE))):
-                        Flame_Translate_Counter3 += 1
-                        Flame_Translate_Counter4 += 1
-                        Flame_Translate_BOOLEAN = True
-                        continue
-                #Boolean if statement that allows for the insertion of the unreferenced exon range as a "unknown" exon.
-                if Flame_Translate_BOOLEAN: 
-                    Flame_Translate_TEMPORARY_STRING += str(str(Flame_Translate_SPLICECOMB[0]) +
-                                                            "-" +
-                                                            str(Flame_Translate_SPLICECOMB[2]) +
-                                                            ",") #FIX: Make it more efficient by changing it into a list with ".join" function that also allows for the removal of the last element.
-                elif Flame_Translate_BOOLEAN == False:
-                    pass
-            Flame_Translate_INCONGRUENT.append(Flame_Translate_TEMPORARY_STRING) #Function to output the semi-translated read into a list (Flame_Translate_INCONGRUENT) and recycle to next read in the central for-loop.
-            #-----------The Progress Bar Start-----------#
-            Flame_Translate_PROGRESSCOUNT1 += 1
-            Flame_Translate_PROGRESSCOUNT2 += 1
-            if Flame_Translate_PROGRESSCOUNT2 != Flame_Translate_PROGRESSMAX:
-                if Flame_Translate_PROGRESSCOUNT1 >= int(round(Flame_Translate_PROGRESSMAX*0.01, 2)):
-                    PROGRESSBAR(Flame_Translate_PROGRESSCOUNT2 / Flame_Translate_PROGRESSMAX)
-                    Flame_Translate_PROGRESSCOUNT1 = 0
+                Flame_Translate_TEMPORARY_STRING = "" #Reset the temporary string into an empty one.
+                #Iterate through every single exon (Flame_Translate_COUNT1)
+                for Flame_Translate_COUNT1 in range(Flame_Translate_SINGLE_READ_COUNT): 
+                    Flame_Translate_Counter3 = 0
+                    Flame_Translate_Counter4 = 0
+                    Flame_Translate_SPLICESTART = (int(Flame_Translate_SINGLE_READ_STRT_ALL.split(",")[Flame_Translate_COUNT1]) +
+                                                   Flame_Translate_STRTPNT)
+                    Flame_Translate_SPLICELEN = int(Flame_Translate_SINGLE_READ_LEN_ALL.split(",")[Flame_Translate_COUNT1])
+                    Flame_Translate_SPLICESTOP = (Flame_Translate_SPLICESTART + Flame_Translate_SPLICELEN)
+                    #For ease of use: Collapsing the characteristics into a single list.
+                    Flame_Translate_SPLICECOMB = [Flame_Translate_SPLICESTART,
+                                                  Flame_Translate_SPLICELEN,
+                                                  Flame_Translate_SPLICESTOP]
+                    #Forcing to run through all the Exons specified in the reference unless match in which it breaks the loop in order to optimize the running time.                
+                    while Flame_Translate_Counter4 != len(REF):
+                        #If statement that will be flagged if the Exon matches the reference +- variance-variable (TRANSLATERANGESIZE). Linked with line 289.
+                        if ((REF[Flame_Translate_Counter3][1]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[0] <= REF[Flame_Translate_Counter3][1]+TRANSLATERANGESIZE) and
+                            (REF[Flame_Translate_Counter3][2]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[1] <= REF[Flame_Translate_Counter3][2]+TRANSLATERANGESIZE) and
+                            (REF[Flame_Translate_Counter3][3]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[2] <= REF[Flame_Translate_Counter3][3]+TRANSLATERANGESIZE)):
+                            Flame_Translate_Counter2 += 1
+                            Flame_Translate_TEMPORARY_STRING += str(REF[Flame_Translate_Counter3][0] + ",") #FIX: Make it more efficient by changing it into a list with ".join" function that also allows for the removal of the last element. list1 = ['1','2','3','4'], s = "-", s = s.join(list1) 
+                            Flame_Translate_Counter3 += 1
+                            Flame_Translate_BOOLEAN = False
+                            break
+                        #If otherwise, keep looping until you reach the end of the reference file. Linked with line 281.
+                        elif ((not (REF[Flame_Translate_Counter3][1]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[0] <= REF[Flame_Translate_Counter3][1]+TRANSLATERANGESIZE)) or
+                              (not (REF[Flame_Translate_Counter3][2]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[1] <= REF[Flame_Translate_Counter3][2]+TRANSLATERANGESIZE)) or
+                              (not (REF[Flame_Translate_Counter3][3]-TRANSLATERANGESIZE <= Flame_Translate_SPLICECOMB[2] <= REF[Flame_Translate_Counter3][3]+TRANSLATERANGESIZE))):
+                            Flame_Translate_Counter3 += 1
+                            Flame_Translate_Counter4 += 1
+                            Flame_Translate_BOOLEAN = True
+                            continue
+                    #Boolean if statement that allows for the insertion of the unreferenced exon range as a "unknown" exon.
+                    if Flame_Translate_BOOLEAN: 
+                        Flame_Translate_TEMPORARY_STRING += str(str(Flame_Translate_SPLICECOMB[0]) +
+                                                                "-" +
+                                                                str(Flame_Translate_SPLICECOMB[2]) +
+                                                                ",") #FIX: Make it more efficient by changing it into a list with ".join" function that also allows for the removal of the last element.
+                    elif Flame_Translate_BOOLEAN == False:
+                        pass
+                Flame_Translate_INCONGRUENT.append(Flame_Translate_TEMPORARY_STRING) #Function to output the semi-translated read into a list (Flame_Translate_INCONGRUENT) and recycle to next read in the central for-loop.
+                #-----------The Progress Bar Start-----------#
+                Flame_Translate_PROGRESSCOUNT1 += 1
+                Flame_Translate_PROGRESSCOUNT2 += 1
+                if Flame_Translate_PROGRESSCOUNT2 != Flame_Translate_PROGRESSMAX:
+                    if Flame_Translate_PROGRESSCOUNT1 >= int(round(Flame_Translate_PROGRESSMAX*0.01, 2)):
+                        PROGRESSBAR(Flame_Translate_PROGRESSCOUNT2 / Flame_Translate_PROGRESSMAX)
+                        Flame_Translate_PROGRESSCOUNT1 = 0
+                        time.sleep(0.001)
+                elif Flame_Translate_PROGRESSCOUNT2 == Flame_Translate_PROGRESSMAX:
+                    PROGRESSBAR(Flame_Translate_PROGRESSCOUNT2/Flame_Translate_PROGRESSMAX)
                     time.sleep(0.001)
-            elif Flame_Translate_PROGRESSCOUNT2 == Flame_Translate_PROGRESSMAX:
-                PROGRESSBAR(Flame_Translate_PROGRESSCOUNT2/Flame_Translate_PROGRESSMAX)
-                time.sleep(0.001)
-            #-----------The Progress Bar End-----------#
+                #-----------The Progress Bar End-----------#
+        elif len(REF) == 0:
+            for Flame_Translate_SINGLE_READ in TRANSLATEINCONGRUENTINPUT:
+                #For ease of use: Singling out all the relevant information for the bed12 read:
+                Flame_Translate_STRTPNT = int(Flame_Translate_SINGLE_READ.split("\t")[1])
+                Flame_Translate_SINGLE_READ_STRT_ALL = Flame_Translate_SINGLE_READ.split("\t")[11]
+                Flame_Translate_SINGLE_READ_LEN_ALL = Flame_Translate_SINGLE_READ.split("\t")[10]
+                Flame_Translate_SINGLE_READ_COUNT = int(Flame_Translate_SINGLE_READ.split("\t")[9])
+                Flame_Translate_Counter3 = 0
+                Flame_Translate_Counter4 = 0
+                Flame_Translate_TEMPORARY_STRING = "" #Reset the temporary string into an empty one.
+                #Iterate through every single exon (Flame_Translate_COUNT1)
+                for Flame_Translate_COUNT1 in range(Flame_Translate_SINGLE_READ_COUNT): 
+                    Flame_Translate_Counter3 = 0
+                    Flame_Translate_Counter4 = 0
+                    Flame_Translate_SPLICESTART = (int(Flame_Translate_SINGLE_READ_STRT_ALL.split(",")[Flame_Translate_COUNT1]) +
+                                                   Flame_Translate_STRTPNT)
+                    Flame_Translate_SPLICELEN = int(Flame_Translate_SINGLE_READ_LEN_ALL.split(",")[Flame_Translate_COUNT1])
+                    Flame_Translate_SPLICESTOP = (Flame_Translate_SPLICESTART + Flame_Translate_SPLICELEN)
+                    #For ease of use: Collapsing the characteristics into a single list.
+                    Flame_Translate_SPLICECOMB = [Flame_Translate_SPLICESTART,
+                                                  Flame_Translate_SPLICELEN,
+                                                  Flame_Translate_SPLICESTOP]
+                    Flame_Translate_TEMPORARY_STRING += str(str(Flame_Translate_SPLICECOMB[0]) +
+                                                                "-" +
+                                                                str(Flame_Translate_SPLICECOMB[2]) +
+                                                                ",") #FIX: Make it more efficient by changing it into a list with ".join" function that also allows for the removal of the last element.
+                    
+                Flame_Translate_INCONGRUENT.append(Flame_Translate_TEMPORARY_STRING)
     elif TRANSLATEINCONGRUENTINPUT == []: #If statement that will activate depending if the input (Input[2]) is empty. Linked with Line 236
         print("-----------\tInitiate Translate Function, Incongruent\t\t\t-----------")
         print("Status: [] Error... Empty Input")
         Flame_Translate_INCONGRUENT = []
     return Flame_Translate_ANNOTATED, Flame_Translate_INCONGRUENT #Output Object Type: [List, List]
-
 
 #Central Quantificiation function that will quantify the combinations of exons.
 def QUANTIFYFUNC(QUANTIFYINPUT):
@@ -529,13 +559,21 @@ def FREQUENCYSITEFUNC(FREQUENCYSITEINPUT, REF, FREQUENCYSITERANGESIZE, FREQUENCY
     Flame_FrequencySite_MAX = 0
     Flame_FrequencySite_Counter1 = 0
     #-----------The Function Itself-----------#
-    #Going through the reference and singeling out the last possible "genomic"-position.
-    for Flame_FrequencySite_COUNT1 in REF:  
-        if REF[Flame_FrequencySite_Counter1][3] > Flame_FrequencySite_MAX:
-            Flame_FrequencySite_MAX = REF[Flame_FrequencySite_Counter1][3]
-            Flame_FrequencySite_Counter1 += 1
-        elif REF[Flame_FrequencySite_Counter1][3] <= Flame_FrequencySite_MAX:
-            Flame_FrequencySite_Counter1 += 1
+    #If-statement that checks whether the Reference is empty or not.
+    if len(REF) == 0:
+        for Flame_FrequencySite_COUNT1 in FREQUENCYSITEINPUT:
+            if int(Flame_FrequencySite_COUNT1.split("-")[1]) > Flame_FrequencySite_MAX:
+                Flame_FrequencySite_MAX = int(Flame_FrequencySite_COUNT1.split("-")[1])
+            elif int(Flame_FrequencySite_COUNT1.split("-")[1]) <= Flame_FrequencySite_MAX:
+                pass
+    elif len(REF) > 0:
+        #Going through the reference and singeling out the last possible "genomic"-position.
+        for Flame_FrequencySite_COUNT1 in REF:  
+            if REF[Flame_FrequencySite_Counter1][3] > Flame_FrequencySite_MAX:
+                Flame_FrequencySite_MAX = REF[Flame_FrequencySite_Counter1][3]
+                Flame_FrequencySite_Counter1 += 1
+            elif REF[Flame_FrequencySite_Counter1][3] <= Flame_FrequencySite_MAX:
+                Flame_FrequencySite_Counter1 += 1
     #Create an empty dataset that starts at "genomic"-position 1 and ends at the last possible "genomic"-position dependent on the GTF file.
     for Flame_FrequencySite_COUNT2 in range((Flame_FrequencySite_MAX) +
                                             FREQUENCYSITERANGESIZE): #Create a smaller list for only the gene range?
@@ -670,7 +708,6 @@ def SHORTREADFUNC(SHORTREADINPUT1, SHORTREADINPUT2, SHORTREADCANDIDATES, REF):
     Flame_ShortRead_CIGARCOUNT = 0
     Flame_ShortRead_CIGAROPERATOR = 0
     Flame_ShortRead_Counter1 = 0
-    FLAMEASDF = 0
     #-----------The Function Itself-----------#
     #Going through each aligned short-read from the BAM/SAM
     for Flame_ShortRead_COUNT1 in SHORTREADINPUT1:
@@ -788,8 +825,6 @@ def SHORTREADFUNC(SHORTREADINPUT1, SHORTREADINPUT2, SHORTREADCANDIDATES, REF):
         if Flame_ShortRead_Counter1 == len(Flame_ShortRead_SPLICESITECOUNT):
             Flame_ShortRead_COUNT2.extend(["N/A"])
     return Flame_ShortRead_CANDIDATES, Flame_ShortRead_SPLICESITECOUNT
-
-
 
 #def main() #FIX: Create a Main function if you have everything ready and just want to run everything in one go.
 #if __name__ == "__main__":
