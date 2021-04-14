@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #Import Packages:
-import argparse
+import argparse, io
 import pysam
 import FLAME_FUNC.FLAME_FUNC as FF #Break this down into each part based on the command.
 
@@ -56,6 +56,7 @@ if args.REF != 0:
             pass
         else:
             Flame_Main_REF += Flame_Main_REFLINE.rstrip()
+            
 ###Load the Shortread if it specified to be used for the confirmation of splice signal using short read RNA-seq.
 if args.SAM != 0:
     print("Shortread:\t{}\n".format(args.SAM), end = "")
@@ -79,8 +80,14 @@ print("-------------------------------------------------------------------------
 #Variables:
 ##Input Files and References:
 Flame_Main_INPUT1 = open(args.INPUT, "r")
-Flame_Main_INPUT2 = open(args.INPUT, "r")
-Flame_Main_GTFFILE = open(args.GTF, "r") #Storage[List] of the GTF file.
+try:
+    if args.GTF != None:
+        Flame_Main_GTFFILE = open(args.GTF, "r") #Storage[List] of the GTF file.
+    else:
+        Flame_Main_GTFFILE = io.StringIO("")
+except:
+    print("GTF-File Error")
+
 Flame_Main_RANGESIZE = int(args.RANGE) #Storage(Integer) of the Windowsize.
 Flame_Main_GENENAME = args.GENE #Storage("String") of the Specific Gene.
 Flame_Main_REFERENCELIST = [] #Storage[Nested List] of the reference.
@@ -103,9 +110,8 @@ Flame_Main_REFERENCELIST = FF.CREATEREFFUNC(Flame_Main_GTFFILE,
 print("-----------\tInitiate Filter Function\t\t\t\t\t-----------")
 #Function to classify the reads as either "Annotated" or "Incongruent" and store them as 
 Flame_Main_ANNOTATEDREADS, Flame_Main_INCONGRUENTREADS = FF.FILTERFUNC(Flame_Main_INPUT1,
-                                                               Flame_Main_INPUT2,
-                                                               Flame_Main_REFERENCELIST,
-                                                               Flame_Main_RANGESIZE) #Input, Reference, Rangesize, AnnotatedOutput, 
+                                                                       Flame_Main_REFERENCELIST,
+                                                                       Flame_Main_RANGESIZE) #Input, Reference, Rangesize, AnnotatedOutput, 
 
 ##Print out Annotated:
 if Flame_Main_ANNOTATEDREADS != []:
@@ -127,9 +133,9 @@ else:
 
 #Translate Function. They have built in Print function. Also make a function that will make either Annotated/Incongruent reads = 0 to avoid downstream computation, if one chooses.
 Flame_Main_TRANSLATEANNOTATED, Flame_Main_TRANSLATEINCONGRUENT = FF.TRANSLATEFUNC(Flame_Main_REFERENCELIST,
-                                                                          Flame_Main_RANGESIZE,
-                                                                          Flame_Main_ANNOTATEDREADS,
-                                                                          Flame_Main_INCONGRUENTREADS)
+                                                                                  Flame_Main_RANGESIZE,
+                                                                                  Flame_Main_ANNOTATEDREADS,
+                                                                                  Flame_Main_INCONGRUENTREADS)
 if args.VERBOSE:
     ##Print out Annotated:
     if Flame_Main_TRANSLATEANNOTATED != []:
@@ -185,15 +191,13 @@ Flame_Main_OUTPUT.close()
 print("-----------\tInitiate Singling of Incongruent Exons\t\t\t\t-----------")
 #Command itself:
 Flame_Main_POTENTIALS = FF.INCONGRUENTSEPERATORFUNC(Flame_Main_TRANSLATEINCONGRUENT,
-                                               Flame_Main_REFERENCELIST)
-
+                                                    Flame_Main_REFERENCELIST)
 print("-----------\tInitiate Novel Splice Site Detection, Part1: Frequency\t\t-----------")
 #Command itself:
 Flame_Main_GENEREFERENCE = FF.FREQUENCYSITEFUNC(Flame_Main_POTENTIALS,
                                                 Flame_Main_REFERENCELIST,
                                                 Flame_Main_RANGESIZE,
                                                 Flame_Main_FREQUENCYWINDOWSIZE)
-
 
 print("-----------\tInitiate Novel Splice Site Detection, Part2: Threshold\t\t-----------")
 #Prepare GTF reference:
@@ -242,80 +246,48 @@ else:
 ##Print out Potential Splice Sites:
 Flame_Main_OUTPUT = open("%s.PotentialSplice.tsv" %args.OUTPUT, "w+")
 if Flame_Main_Counter3_1 == False and Flame_Main_Counter3_2 == False:
-    Flame_Main_OUTPUT.write("Gene Position" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Absolute" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Percent" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Gene Position" + "\t" +
+                            "Supporting Incongruent Reads, Absolute" + "\t" +
+                            "Supporting Incongruent Reads, Percent" + "\n")
     for Flame_Main_COUNT in Flame_Main_SPLICECANDIDATES:
-        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[1]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[2]) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                str(Flame_Main_COUNT[1]) + "\t" +
+                                str(Flame_Main_COUNT[2]) + "\n")
     Flame_Main_OUTPUT.close
 elif Flame_Main_Counter3_1 == True and Flame_Main_Counter3_2 == False :
-    Flame_Main_OUTPUT.write("Gene Position" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Absolute" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Percent" +
-                            "\t" +
-                            "Adjacent Splice Signal" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Gene Position" + "\t" +
+                            "Supporting Incongruent Reads, Absolute" + "\t" +
+                            "Supporting Incongruent Reads, Percent" + "\t" +
+                            "Adjacent Splice Signal" + "\n")
     for Flame_Main_COUNT in Flame_Main_SPLICECANDIDATES:
-        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[1]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[2]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[3]) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                str(Flame_Main_COUNT[1]) + "\t" +
+                                str(Flame_Main_COUNT[2]) + "\t" +
+                                str(Flame_Main_COUNT[3]) + "\n")
     Flame_Main_OUTPUT.close
 elif Flame_Main_Counter3_1 == False and Flame_Main_Counter3_2 == True:
-    Flame_Main_OUTPUT.write("Gene Position" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Absolute" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Percent" +
-                            "\t" +
-                            "Short Read Support" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Gene Position" + "\t" +
+                            "Supporting Incongruent Reads, Absolute" + "\t" +
+                            "Supporting Incongruent Reads, Percent" + "\t" +
+                            "Short Read Support" + "\n")
     for Flame_Main_COUNT in Flame_Main_SPLICECANDIDATES:
-        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[1]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[2]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[3]) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                str(Flame_Main_COUNT[1]) + "\t" +
+                                str(Flame_Main_COUNT[2]) + "\t" +
+                                str(Flame_Main_COUNT[3]) + "\n")
     Flame_Main_OUTPUT.close
 elif Flame_Main_Counter3_1 == True and Flame_Main_Counter3_2 == True:
-    Flame_Main_OUTPUT.write("Gene Position" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Absolute" +
-                            "\t" +
-                            "Supporting Incongruent Reads, Percent" +
-                            "\t" +
-                            "Adjacent Splice Signal" +
-                            "\t" +
-                            "Short Read Support" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Gene Position" + "\t" +
+                            "Supporting Incongruent Reads, Absolute" + "\t" +
+                            "Supporting Incongruent Reads, Percent" + "\t" +
+                            "Adjacent Splice Signal" + "\t" +
+                            "Short Read Support" + "\n")
     for Flame_Main_COUNT in Flame_Main_SPLICECANDIDATES:
-        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[1]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[2]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[3]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[4]) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                str(Flame_Main_COUNT[1]) + "\t" +
+                                str(Flame_Main_COUNT[2]) + "\t" +
+                                str(Flame_Main_COUNT[3]) + "\t" +
+                                str(Flame_Main_COUNT[4]) + "\n")
     Flame_Main_OUTPUT.close
 else:
     print("Error, Type: Counter3")
@@ -327,14 +299,10 @@ Flame_Main_READTOTALLENGTH = []
 ##Print out quantification:
 if Flame_Main_QUANTIFYANNOTATED != {}:
     Flame_Main_OUTPUT = open("%s.QuantAnnotated.tsv" %args.OUTPUT, "w+")
-    Flame_Main_OUTPUT.write("Count" +
-                            "\t" +
-                            "Length of Isoform" +
-                            "\t" +
-                            "Number of Exons" +
-                            "\t" +
-                            "Isoform Permutation" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Count" + "\t" +
+                            "Length of Isoform" + "\t" +
+                            "Number of Exons" + "\t" +
+                            "Isoform Permutation" + "\n")
     for k, v in Flame_Main_QUANTIFYANNOTATED.items():
         #-----------The Function for Summing the Total Length of the Splice Variant-----------#
         Flame_Main_READTOTALLENGTH = []
@@ -345,14 +313,10 @@ if Flame_Main_QUANTIFYANNOTATED != {}:
                 elif Flame_Main_ANNOTATEDEXON != Flame_Main_COUNT[0]:
                     pass
         #-----------The Function for Summing the Total Length of the Splice Variant-----------#
-        Flame_Main_OUTPUT.write(str(v) +
-                                "\t" +
-                                str(sum(Flame_Main_READTOTALLENGTH)) +
-                                "\t" +
-                                str(len(Flame_Main_READTOTALLENGTH)) +
-                                "\t" +
-                                str(k) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(v) + "\t" +
+                                str(sum(Flame_Main_READTOTALLENGTH)) + "\t" +
+                                str(len(Flame_Main_READTOTALLENGTH)) + "\t" +
+                                str(k) + "\n")
     Flame_Main_OUTPUT.close()
 else:
     pass
@@ -363,15 +327,11 @@ Flame_Main_QUANTIFYINCONGRUENT = FF.QUANTIFYFUNC(Flame_Main_TRANSLATEINCONGRUENT
 ##Print out INCONGRUENT quantification:
 if Flame_Main_QUANTIFYINCONGRUENT != {}:
     Flame_Main_OUTPUT = open("%s.QuantIncongruent.tsv" %args.OUTPUT, "w+")
-    Flame_Main_OUTPUT.write("Count" +
-                            "\t" +
-                            "Isoform" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Count" + "\t" +
+                            "Isoform" + "\n")
     for k, v in Flame_Main_QUANTIFYINCONGRUENT.items():        
-        Flame_Main_OUTPUT.write(str(v) +
-                                "\t" +
-                                str(k) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(v) + "\t" +
+                                str(k) + "\n")
     Flame_Main_OUTPUT.close()
 else:
     pass
@@ -382,9 +342,9 @@ print("-----------\tInitiate Creation of Empty Adjacency Matrix\t\t\t-----------
 Flame_Main_ADJMTX2 = FF.EMPTYADJMTXFUNC(Flame_Main_SPLICECANDIDATES)
 print("-----------\tInitiate Creation of Adjacency Matrix, Incongruent\t\t-----------")
 Flame_Main_ADJMTX2 = FF.INCONGRUENTADJMTXFUNC(Flame_Main_POTENTIALS,
-                                         Flame_Main_SPLICECANDIDATES,
-                                         Flame_Main_ADJMTX2,
-                                         Flame_Main_RANGESIZE)
+                                              Flame_Main_SPLICECANDIDATES,
+                                              Flame_Main_ADJMTX2,
+                                              Flame_Main_RANGESIZE)
 ##Print out Adjacency Matrix, Incongruent:
 ###Print the Column- and Rowheaders.
 Flame_Main_OUTPUT = open("%s.AdjacencyIncongruent.tsv" %args.OUTPUT, "w+")
@@ -423,21 +383,13 @@ if args.VERBOSE:
 ### Print out the Reference
 if args.VERBOSE:
     Flame_Main_OUTPUT = open("%s.Reference.txt" %args.OUTPUT, "w+")
-    Flame_Main_OUTPUT.write("Exon Name" +
-                            "\t" +
-                            "Exon Start Site" +
-                            "\t" +
-                            "Exon Length" +
-                            "\t" +
-                            "Exon Stop Site" +
-                            "\n")
+    Flame_Main_OUTPUT.write("Exon Name" + "\t" +
+                            "Exon Start Site" + "\t" +
+                            "Exon Length" + "\t" +
+                            "Exon Stop Site" + "\n")
     for Flame_Main_COUNT in Flame_Main_REFERENCELIST:
-        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[1]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[2]) +
-                                "\t" +
-                                str(Flame_Main_COUNT[3]) +
-                                "\n")
+        Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                str(Flame_Main_COUNT[1]) + "\t" +
+                                str(Flame_Main_COUNT[2]) + "\t" +
+                                str(Flame_Main_COUNT[3]) + "\n")
     Flame_Main_OUTPUT.close()
