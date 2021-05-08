@@ -1,7 +1,7 @@
-# FLAME: Full Length Adjecency Matrix Enumeration.
+# FLAME: Full Length Adjacency Matrix Enumeration.
 FLAME:fire: is a longread splice variant annotation tool. 
 It allows for:  
-- Filtering and quantification of splice variants and exon connectivity through an [Adjecency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
+- Filtering and quantification of splice variants and exon connectivity through an [Adjacency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
 - Detection of novel exons sites or exon variants through frequency
 - Confirmation of said novel exons sites through the use of:
   - Detection of possible adjecent Splice Site Signals
