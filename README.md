@@ -45,9 +45,12 @@ Flame can be run to confirm the suggested Splice Site Signals and the suggested 
 [//]: <For more examples and usage, please refer to the [Wiki].>
 
 ## Release History
-
+* 0.1.1
+    * Transcriptome-Wide Mode implemented 
+    * Beta-version
 * 0.0.1
     * Work in progress
+    * Alpha-version
 
 ## Meta
 
