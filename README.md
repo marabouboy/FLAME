@@ -1,4 +1,4 @@
-# FLAME: Full Length Adjacency Matrix Enumeration.
+# FLAME: Full-Length Adjacency Matrix Enumeration.
 FLAME:fire: is a long-read splice variant annotation tool.
 
 FLAME has two modules:
@@ -11,7 +11,7 @@ FLAME has two modules:
 - FLAME-GLOW:
   -  Global gene iteration
   -  Filtering and flagging of genes with incongruent annotations
-  -  Translation and quantificaiton of genes with sufficient reference annotation
+  -  Translation and quantification of genes with sufficient reference annotation
 
 ## Requirements
 - Python 3.6
