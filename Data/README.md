@@ -2,7 +2,7 @@
 
 These datasets are meant for testing the pipeline, testing parameters and for educational purposes. 
 
-The toy-data directory only contains:
+The toy data directory only contains:
 - The filtered BED12 reads from the C666 long-read sequencing (Decompress before use).
 - The standard EBV (NC_007605.1) GTF reference, for which I do not own.
 
