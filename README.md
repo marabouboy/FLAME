@@ -1,11 +1,17 @@
 # FLAME: Full Length Adjacency Matrix Enumeration.
-FLAME:fire: is a longread splice variant annotation tool. 
-It allows for:  
-- Filtering and quantification of splice variants and exon connectivity through an [Adjacency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
-- Detection of novel exons sites or exon variants through frequency
-- Confirmation of said novel exons sites through the use of:
-  - Detection of possible adjecent Splice Site Signals
-  - Shortread sequencing reads
+FLAME:fire: is a long-read splice variant annotation tool.
+
+FLAME has two modules:
+- Gene Specific FLAME:  
+  - Filtering, translation, quantification of splice variants and exon connectivity through an [Adjacency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
+  - Detection of novel exons sites or exon variants through frequency
+  - Confirmation of said novel exons sites through the use of:
+    - Detection of possible adjacent splice site signals
+    - Short-read sequencing reads
+- FLAME-GLOW:
+  -  Global gene iteration
+  -  Filtering and flagging of genes with incongruent annotations
+  -  Translation and quantificaiton of genes with sufficient reference annotation
 
 ## Requirements
 - Python 3.6
@@ -19,34 +25,67 @@ OS X & Linux:
 git clone https://github.com/marabouboy/FLAME
 ```
 
-## Usage example
+## FLAME usage example
+- Gene Specific FLAME under minimal condition adheres to the following syntax:  
+  ```sh
+  ./FLAME.py -I [INPUT.bed] -GTF [Annotation.gtf] -G [Gene]
+  ```
+  Minimal Gene Specific FLAME will run:  
+  1. *create.ref*  
+  2. *filter*  
+  3. *translate*  
+  4. *quantify*  
+  5. *annotated.adjmtx*
+  6. *frequency.site*
+  7. *frequency.thresh*
+  8. *incongruent.adjmtx*  
+  
+- Gene Specific FLAME with maximal condition adheres to the following syntax:  
+  ```sh
+  ./FLAME.py -I [INPUT.bed] -GTF [Annotation.gtf] -G [Gene] -R [Reference.fasta] -B [Shortread.bam]
+  ```  
+  Maximal Gene Specific FLAME will run:  
+  1. Step i-viii of Minimal Gene Specific FLAME  
+  8. *splice.signal*  
+  9. *shortread*  
 
-FLAME runs the Filter, Quantificiation and Novel Exon Detection by default and adheres to the following syntax:
-```sh
-./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene]
-```
-
-Flame can be run to confirm the suggested Splice Site Signals and the suggested Exons:
-```sh
-./FLAME.py -I [INPUT.bed] -GTF [AnnotationReference.gtf] -G [Gene] -R [Reference.fasta] -B [Shortread.bam]/[Shortread.sam]
-```
-
+- FLAME-GLOW
+  ```sh
+  ./FLAME.py -I [INPUT.bed] -GTF [Annotation.gtf]
+  ```
 ## Flags
-```sh
--I [INPUT.bed]:                     #Input file in .bed12 format
--GTF [AnnotationReference.gtf]:     #Reference Annotation file in GTF format
--G [Gene]:                          #Target Gene
---range [int]:                      #Variance Range
--O [string]:                        #Output Prefix
--R [Reference.fasta]:               #Reference in fasta-form to allow for Detection of Adjecent Splice Site Signal 
--B [Shortread.bam]/[Shortread.sam]: #Shortread Sequencing in bam- or sam-format to allow for confirmation of splice site using short read 
-```
+- General FLAME Flags:  
+  ```sh
+  -I [INPUT.bed]:             #Input file in BED12 format
+  -GTF [Annotation.gtf]:      #Reference annotation file in GTF format
+  --range [int]:              #Variance function window range
+  -O [string]:                #Output prefix
+  ```
+  
+  - Gene Specific FLAME Flags:  
+    ```sh
+    -G [Gene]:                  #Target gene
+    -R [Reference.fasta]:       #Organism reference assembly sequence in fasta-format for the splice.signal-funciton
+    -B [Shortread.bam]:         #Short-read RNA sequencing data in bam- or sam-format for the shortread-function
+    --verbose                   #Optional Flag to output additional files
+    ```
+  
+  - FLAME-GLOW Flags:
+    ```sh
+    --min [int]:                #Minimum read coverage
+    --ratio [float]:            #Minimum annotation ratio for the FLAME-GLOW module
+    ```
+
+[//]: <## Output>
 
 [//]: <For more examples and usage, please refer to the [Wiki].>
 
 ## Release History
+* 0.1.2
+    * Updated README.md
+    * Added toy data
 * 0.1.1
-    * Transcriptome-Wide Mode implemented 
+    * FLAME-GLOW mode implemented 
     * Beta-version
 * 0.0.1
     * Work in progress
