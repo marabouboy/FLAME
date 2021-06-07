@@ -6,7 +6,7 @@ The toy data directory only contains:
 - The filtered BED12 reads from the C666-1 long-read sequencing (Decompress before use).
 - The standard EBV (NC_007605.1) GTF reference.
 
-These datasets are the bare necessity for testing the ***Gene-Specific*** FLAME module. Toy data for FLAME-GLOW will come at a later patch.
+These datasets are the bare necessity for testing the ***Gene-Specific*** FLAME module. Toy data for FLAME-GLOW is planned to be amended in a future patch.
 
 Additional compliments for further in-depth analysis using short-read confirmation and canonical splice junction detection needs to be downloaded from public repositories. 
 
@@ -19,6 +19,25 @@ These repositories are:
   This data is publically available under the NCBI BioProject ID [PRJNA501807](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA501807). 
   
   The dataset with SRA Accession ID:[SRR8133536](https://www.ncbi.nlm.nih.gov/sra/SRX4954558) was used and is available to download through NCBI's [SRA-tools](https://github.com/ncbi/sra-tools) toolkit.
+
+## Example on running Gene Specific FLAME with the Toy data
+This example will use the EBV non-coding RNA RPMS1 as the target gene.
+- Using Gene Specific FLAME with minimal addition will use the following syntax:  
+ ```sh
+ ./FLAME.py -I C666_LR_01.bed -GTF Epstein-BarrVirus.gtf -G RPMS1
+ ```
+ 
+- Using Gene Specific FLAME with canonical splice junction detection will use the following syntax:  
+ ```sh
+ ./FLAME.py -I C666_LR_01.bed -GTF Epstein-BarrVirus.gtf -G RPMS1 -R [Reference.fasta]
+ ```
+ 
+- Using Gene Specific FLAME with shortread confirmation will use the following syntax:  
+ ```sh
+ ./FLAME.py -I C666_LR_01.bed -GTF Epstein-BarrVirus.gtf -G RPMS1 -B [Shortread.bam]
+ ```
+## Example on running FLAME-GLOW with the Toy data
+Currently no toy data exists for the FLAME-GLOW pipeline. This is planned to be amended in a future patch.
 
 
 # FLAME-GLOW's Toy data
