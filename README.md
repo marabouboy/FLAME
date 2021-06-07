@@ -75,6 +75,10 @@ git clone https://github.com/marabouboy/FLAME
     --min [int]:                #Minimum read coverage
     --ratio [float]:            #Minimum annotation ratio for the FLAME-GLOW module
     ```
+## Test Running FLAME
+There is currently only toy data for the Gene Specific FLAME module.
+
+Both the data as well as instruction for how to run the Gene Specific FLAME module exists under the [`Data` directory](Data)
 
 [//]: <## Output>
 
