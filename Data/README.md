@@ -4,9 +4,9 @@ These datasets are meant for testing the pipeline, testing parameters and for ed
 
 The toy data directory only contains:
 - The filtered BED12 reads from the C666-1 long-read sequencing (Decompress before use).
-- The standard EBV (NC_007605.1) GTF reference, for which I do not own.
+- The standard EBV (NC_007605.1) GTF reference.
 
-These datasets are the bare necessity for testing the Gene-Specific FLAME module. 
+These datasets are the bare necessity for testing the **Gene-Specific** FLAME module. Toy data for FLAME-GLOW will come at a later patch.
 
 Additional compliments for further in-depth analysis using short-read confirmation and canonical splice junction detection needs to be downloaded from public repositories. 
 
