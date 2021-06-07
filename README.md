@@ -56,24 +56,24 @@ git clone https://github.com/marabouboy/FLAME
 ## Flags
 - General FLAME Flags:  
   ```sh
-  -I [INPUT.bed]:             #Input file in BED12 format
-  -GTF [Annotation.gtf]:      #Reference annotation file in GTF format
-  --range [int]:              #Variance function window range
-  -O [string]:                #Output prefix
+  -I [INPUT.bed]:             #Input file in BED12 format (Required)
+  -GTF [Annotation.gtf]:      #Reference annotation file in GTF format (Required)
+  --range [int]:              #Variance function window range (Optional, with default = 20)
+  -O [string]:                #Output prefix (Optional, with default = "Flame-")
   ```
   
   - Gene Specific FLAME Flags:  
     ```sh
-    -G [Gene]:                  #Target gene
-    -R [Reference.fasta]:       #Organism reference assembly sequence in fasta-format for the splice.signal-funciton
-    -B [Shortread.bam]:         #Short-read RNA sequencing data in bam- or sam-format for the shortread-function
-    --verbose                   #Optional Flag to output additional files
+    -G [Gene]:                  #Target gene (Required)
+    -R [Reference.fasta]:       #Organism reference assembly sequence in fasta-format for the splice.signal-funciton (Optional)
+    -B [Shortread.bam]:         #Short-read RNA sequencing data in bam- or sam-format for the shortread-function (Optional)
+    --verbose                   #Optional Flag to output additional files (Optional)
     ```
   
   - FLAME-GLOW Flags:
     ```sh
-    --min [int]:                #Minimum read coverage
-    --ratio [float]:            #Minimum annotation ratio for the FLAME-GLOW module
+    --min [int]:                #Minimum read coverage (Optional, with default = 10)
+    --ratio [float]:            #Minimum annotation ratio for the FLAME-GLOW module (Optional, with default = 0.25)
     ```
 ## Test Running FLAME
 There is currently only toy data for the ***Gene Specific*** FLAME module.
