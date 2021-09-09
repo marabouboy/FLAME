@@ -85,9 +85,12 @@ Both the data as well as instruction for how to run the Gene Specific FLAME modu
 [//]: <For more examples and usage, please refer to the [Wiki].>
 
 ## Release History
+* 0.1.3
+    * Fixed smaller bugs
+    * Added a [Wiki](https://github.com/marabouboy/FLAME/wiki) 
 * 0.1.2
     * Updated README.md
-    * Added toy data
+    * Added [toy data](Data)
 * 0.1.1
     * FLAME-GLOW mode implemented 
     * Beta-version
