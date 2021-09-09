@@ -37,8 +37,10 @@ This example will use the EBV non-coding RNA RPMS1 as the target gene.
  ./FLAME.py -I C666_LR_01.bed -GTF Epstein-BarrVirus.gtf -G RPMS1 -B [Shortread.bam]
  ```
 ## Example on running FLAME-GLOW with the Toy data
-Currently no toy data exists for the FLAME-GLOW pipeline. This is planned to be amended in a future patch.
+Currently no toy data exists for the FLAME-GLOW pipeline. <br>
+This is planned to be amended in a future patch.
 
 
 # FLAME-GLOW's Toy data
-Currently, there are no toy data to test the FLAME-GLOW module uploaded. This is planned to be amended in a future patch.
+Currently, there are no toy data to test the FLAME-GLOW module uploaded. <br>
+This is planned to be amended in a future patch.
