@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#FLAME 0.1.4
 #Import Packages:
 import argparse, io
 import pysam
