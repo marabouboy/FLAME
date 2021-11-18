@@ -1,6 +1,8 @@
 # FLAME: Full-Length Adjacency Matrix Enumeration.
 FLAME:fire: is a long-read splice variant annotation tool.
 
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/34253685/) - [Journal](https://rnajournal.cshlp.org/content/27/10/1127.long)
+
 FLAME has two modules:
 - Gene Specific FLAME:  
   - Filtering, translation, quantification of splice variants and exon connectivity through an [Adjacency Matrix](https://en.wikipedia.org/wiki/Adjacency_matrix)
@@ -53,6 +55,8 @@ git clone https://github.com/marabouboy/FLAME
   ```sh
   ./FLAME.py -I [INPUT.bed] -GTF [Annotation.gtf]
   ```
+- If there is any other questions regarding the use of FLAME, refer to our [Wiki](https://github.com/marabouboy/FLAME/wiki)
+  
 ## Flags
 - General FLAME Flags:  
   ```sh
