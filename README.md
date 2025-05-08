@@ -16,7 +16,7 @@ FLAME has two modules:
   -  Translation and quantification of genes with sufficient reference annotation
 
 ## Requirements
-- Python 3.6
+- Python 3.10
 - pysam
 
 ## Installation
@@ -39,15 +39,16 @@ git clone https://github.com/marabouboy/FLAME
   4. *quantify*  
   5. *annotated.adjmtx*
   6. *frequency.site*
-  7. *frequency.thresh*
-  8. *incongruent.adjmtx*  
+  7. *optimization*
+  8. *frequency.thresh*
+  9. *incongruent.adjmtx*  
   
 - Gene Specific FLAME with maximal condition adheres to the following syntax:  
   ```sh
   ./FLAME.py -I [INPUT.bed] -GTF [Annotation.gtf] -G [Gene] -R [Reference.fasta] -B [Shortread.bam]
   ```  
   Maximal Gene Specific FLAME will run:  
-  1. Step i-viii of Minimal Gene Specific FLAME  
+  1. Step i-ix of Minimal Gene Specific FLAME  
   8. *splice.signal*  
   9. *shortread*  
 
@@ -71,6 +72,8 @@ git clone https://github.com/marabouboy/FLAME
     -G [Gene]:                  #Target gene (Required)
     -R [Reference.fasta]:       #Organism reference assembly sequence in fasta-format for the splice.signal-funciton (Optional)
     -B [Shortread.bam]:         #Short-read RNA sequencing data in bam- or sam-format for the shortread-function (Optional)
+    -CANON:                     #Gene specific filtering of incongruent reads (PotentialSplice), default = True (Optional Disable)
+    -THRESHOLD:                 #Threshold for the Frequency Analysis (Optional, with default = 0.01)
     --verbose                   #Optional Flag to output additional files (Optional)
     ```
   
@@ -89,6 +92,13 @@ Both the data as well as instruction for how to run the Gene Specific FLAME modu
 [//]: <For more examples and usage, please refer to the [Wiki].>
 
 ## Release History
+* 0.1.5
+    * Added gzip support for Input BED12 file, reference FASTA genome file, and reference GTF annotaiton file
+    * Addressed issue 5 where "PotentialSplice.tsv" did not suggest any positions. This was done by:
+      * Filtering for a minimum of 1 canonical exon of the incongruent (Disable if no such assumption is key)
+      * Added a optimization step that exchanges processing of the entire genome/chromosome for faster downstream analysis.
+      * Added the flags "-CANON" and "-THRESHOLD" to manipulate this filtering criterion
+    * Minor bug fixes
 * 0.1.4
     * Fixed smaller bugs in GLOW-mode.
 * 0.1.3
