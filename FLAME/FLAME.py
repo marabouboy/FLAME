@@ -1,30 +1,32 @@
 #!/usr/bin/python3
-#FLAME 0.1.4
+#FLAME 0.1.5
 #Import Packages:
-import argparse, io
+import argparse, io, gzip
 import pysam
 import FLAME_FUNC.FLAME_FUNC as FF #Break this down into each part based on the command.
 
 #####################
 # Need to be fixed List:
 # Fix the comments within FLAME.py. It is a bit wonkey with different explainations for different functions. Be consistent.
-#
+# Implemenet parallellization
+# Implement garbage collection
 #####################
 
 #Input command:
 parser = argparse.ArgumentParser(description = "FLAME: Full Length Adjacency Matrix Enumeration")
 ##Obligatory Inputs:
 parser.add_argument("-I", dest = "INPUT", help = "Input file [Required]")
-parser.add_argument("-GTF", dest = "GTF", help = "Reference File in GTF format")
-parser.add_argument("-G", dest = "GENE", help = "Targeted Gene [Required]", default = "Transcriptome Mode")
-parser.add_argument("--range", dest = "RANGE", help = "Variance Range", default = 20)
-parser.add_argument("--min", dest = "MINIMUM", help = "Minimum Read Coverage", default = 10)
-parser.add_argument("--ratio", dest = "RATIO", help = "Minimum Annotation Ratio", default = float(0.25))
-parser.add_argument("-O", dest = "OUTPUT", help = "Output Prefix", default = "Flame")
+parser.add_argument("-GTF", dest = "GTF", help = "Reference file in GTF format")
+parser.add_argument("-G", dest = "GENE", help = "Targeted gene [Required]", default = "Transcriptome Mode")
+parser.add_argument("-CANON", dest = "CANONICAL", help = "Gene specific filtering of incongruent reads (PotentialSplice), default = True", action="store_false") #I realize that the value is False while instructions show "true", this just makes it easier downstream.
+parser.add_argument("--range", dest = "RANGE", help = "Variance range", default = 20)
+parser.add_argument("--min", dest = "MINIMUM", help = "Minimum read coverage", default = 10)
+parser.add_argument("--ratio", dest = "RATIO", help = "Minimum annotation ratio", default = float(0.25))
+parser.add_argument("-O", dest = "OUTPUT", help = "Output prefix", default = "Flame")
 ##Optional Inputs:
-parser.add_argument("-R", dest = "REF", help = "Reference File in Fasta format", default = 0)
-#parser.add_argument("-THRESHOLD?", dest = "THRESHOLD", help = "Threshold for the Frequency Analysis, the lower threshold the more comprehensive but the longer processing power required", default = 0.01)?
-parser.add_argument("-B", dest = "SAM", help = "Shortread Sequence", default = 0)
+parser.add_argument("-R", dest = "REF", help = "Reference file in Fasta format", default = 0)
+parser.add_argument("-THRESHOLD", dest = "THRESHOLD", help = "Threshold for the Frequency Analysis, the lower threshold the more comprehensive but the longer processing power required", default = 0.01)
+parser.add_argument("-B", dest = "SAM", help = "Shortread sequence", default = 0)
 parser.add_argument("--verbose", dest = "VERBOSE", help = "Verbose output", action="store_true")
 
 ##Parser Funciton:
@@ -36,11 +38,13 @@ print("\n-----------\tInitiating FLAME\t\t\t\t\t\t-----------")
 print("Input:\t\t{}\n\
 GTF:\t\t{}\n\
 Gene:\t\t{}\n\
+Threshold:\t{}\n\
 Range:\t\t{}\n\
 Output:\t\t{}-[Suffix]".format(
     args.INPUT,
     args.GTF,
     args.GENE,
+    args.THRESHOLD,
     args.RANGE, #ADD ANOTHER FILED SPECIFYING THE MINIMUM RATIO FOR FLAME-TRANSCRIPTOMEWIDE?
     args.OUTPUT
 ))
@@ -49,11 +53,24 @@ Output:\t\t{}-[Suffix]".format(
 #Variables:
 ##Input Files and References:
 Flame_Main_INPUT1 = []
-for Flame_Main_COUNT in open(args.INPUT, "r"):
-    Flame_Main_INPUT1.append(Flame_Main_COUNT)
+try:
+    for Flame_Main_COUNT in open(args.INPUT, "r"):
+        Flame_Main_INPUT1.append(Flame_Main_COUNT)
+except UnicodeDecodeError:
+    for Flame_Main_COUNT in gzip.open(args.INPUT, "rb"):
+        Flame_Main_INPUT1.append(Flame_Main_COUNT.decode().rstrip())
+    
+Flame_Main_GTFFILE = []
 try:
     if args.GTF != None:
-        Flame_Main_GTFFILE = open(args.GTF, "r") #Storage[List] of the GTF file.
+        try:
+            for Flame_Main_COUNT in open(args.GTF, "r"):
+                Flame_Main_GTFFILE.append(Flame_Main_COUNT.rstrip())
+            #Flame_Main_GTFFILE = open(args.GTF, "r") #Storage[List] of the GTF file.
+        except UnicodeDecodeError:
+            for Flame_Main_COUNT in gzip.open(args.GTF, "rb"):
+                Flame_Main_GTFFILE.append(Flame_Main_COUNT.decode().rstrip())
+            #Flame_Main_GTFFILE = gzip.open(args.GTF, "rb")
     else:
         Flame_Main_GTFFILE = io.StringIO("")
 except:
@@ -63,10 +80,11 @@ Flame_Main_RANGESIZE = int(args.RANGE) #Storage(Integer) of the Windowsize.
 Flame_Main_MINIMUMREADS = int(args.MINIMUM) #Storage(Integer) of the minimum number of reads.
 Flame_Main_RATIOTHRESH = float(args.RATIO) #Storage(Float) of the ratio required for a gene to pass through and be Translated and Quantified.
 Flame_Main_GENENAME = args.GENE #Storage("String") of the Specific Gene.
+Flame_Main_CANONICAL = args.CANONICAL #Storate(True/Flase) of filtering so to only focus on the exons in the given gene (args.GENE)
 Flame_Main_REFERENCELIST = [] #Storage[Nested List] of the reference.
 Flame_Main_SIGNIFGENES = []
 Flame_Main_FREQUENCYWINDOWSIZE = 2 #FIX: Make this interactive so one can input the window size for the Frequency Analysis.
-Flame_Main_FREQYENCYTHRESHOLD = float(0.01) #FIX: Make this interactive so one can input the window size for the Frequency Threshold.
+Flame_Main_FREQUENCYTHRESHOLD = float(args.THRESHOLD) #Storage(Floating point) of the ratio how how many reads a possible splice site need to represent of the total Incongruent input.
 
 #-------------------------------------------------------------------------------------------------------------------------------------#
 #FLAME: Transcriptome Mode:
@@ -82,13 +100,13 @@ if args.GENE == "Transcriptome Mode": #<----------------- Change here
     Flame_Main_Counter3 = True
     
     #FLAME-WT: 1. Segment the number of genes into a list:
-    for Flame_Main_COUNT1 in Flame_Main_GTFFILE.read().split("\n"):
+    for Flame_Main_COUNT1 in Flame_Main_GTFFILE:
         try:
             if (any(Flame_Main_COUNT1.split("\t")[2]) and
                 ("exon" in Flame_Main_COUNT1.split("\t")[2])):
                 try:
                     Flame_Main_TMPGENE1 = Flame_Main_COUNT1.split(";")[2].split(" ")[2][1:-1]
-                except: #Need this "extra" except clause?
+                except: #Change this except clause to specify the exact error type, otherwise you miss the error
                     pass 
                 if Flame_Main_TMPGENE1 == Flame_Main_TMPGENE2:
                     pass
@@ -122,7 +140,8 @@ if args.GENE == "Transcriptome Mode": #<----------------- Change here
         #FLAME-WT: 4. Acquire the Ratio of Annoated Reads vs Incongruent Reads:
         try:
             Flame_Main_RATIO = float(len(Flame_Main_ANNOTATEDREADS)/
-                                 (len(Flame_Main_ANNOTATEDREADS)+len(Flame_Main_INCONGRUENTREADS)))
+                                     (len(Flame_Main_ANNOTATEDREADS)+
+                                      len(Flame_Main_INCONGRUENTREADS)))
         except (ZeroDivisionError):
             print("%s: Zero Division, No Read-Coverage" % Flame_Main_COUNT1)
             continue
@@ -240,15 +259,21 @@ else: #<----------------- Change here
     ###Load the Reference if it is specified to be used for the Adjacent Splice Site Signal (S3) Detection.
     if args.REF != 0:
         print("Reference:\t{}\n".format(args.REF), end = "")
-        Flame_Main_REFFILE = open(args.REF, "r")
-        #Remove the header of the reference as well as make it one continuous string.
+        Flame_Main_REFFILE = []
+        try:
+            for Flame_Main_COUNT in open(args.REF, "r"):
+                Flame_Main_REFFILE.append(Flame_Main_COUNT)
+        except UnicodeDecodeError:
+            for Flame_Main_COUNT in gzip.open(args.REF, "rb"):
+                Flame_Main_REFFILE.append(Flame_Main_COUNT.decode().rstrip())
+#Remove the header of the reference as well as make it one continuous string.
         Flame_Main_REF = ""
         for Flame_Main_REFLINE in Flame_Main_REFFILE:
             if ">" in Flame_Main_REFLINE:
                 pass
             else:
                 Flame_Main_REF += Flame_Main_REFLINE.rstrip()
-    
+        
     ###Load the Shortread if it specified to be used for the confirmation of splice signal using short read RNA-seq.
     if args.SAM != 0:
         print("Shortread:\t{}\n".format(args.SAM), end = "")
@@ -366,25 +391,32 @@ else: #<----------------- Change here
     print("-----------\tInitiate Singling of Incongruent Exons\t\t\t\t-----------")
     #Command itself:
     Flame_Main_POTENTIALS = FF.INCONGRUENTSEPERATORFUNC(Flame_Main_TRANSLATEINCONGRUENT,
-                                                        Flame_Main_REFERENCELIST)
-    
-    print("-----------\tInitiate Novel Splice Site Detection, Part1: Frequency\t\t-----------")
+                                                        Flame_Main_REFERENCELIST,
+                                                        Flame_Main_CANONICAL)
+
+    print("-----------\tInitiate Novel Splice Site Detection, Part1.1: Frequency\t-----------")
     #Command itself:
     Flame_Main_GENEREFERENCE = FF.FREQUENCYSITEFUNC(Flame_Main_POTENTIALS,
                                                     Flame_Main_REFERENCELIST,
                                                     Flame_Main_RANGESIZE,
                                                     Flame_Main_FREQUENCYWINDOWSIZE)
+
+    print("-----------\tInitiate Novel Splice Site Detection, Part1.2: Optimization\t-----------")
+    #Command itself:
+    Flame_Main_GENEREFERENCE_START = FF.FREQUENCYSITEOPTIFUNC(Flame_Main_GENEREFERENCE)
     
     print("-----------\tInitiate Novel Splice Site Detection, Part2: Threshold\t\t-----------")
     #Prepare GTF reference:
     Flame_Main_SPLICECANDIDATES = []
     #Command itself:
     Flame_Main_SPLICECANDIDATES = FF.FREQUENCYTHRESHFUNC(Flame_Main_GENEREFERENCE,
-                                                         Flame_Main_FREQYENCYTHRESHOLD,
-                                                         Flame_Main_INCONGRUENTREADS)
-    
+                                                         Flame_Main_GENEREFERENCE_START,
+                                                         Flame_Main_FREQUENCYTHRESHOLD,
+                                                         Flame_Main_TRANSLATEINCONGRUENT) #Version 2
+
     if args.REF != 0:
         print("-----------\tInitiate Novel Splice Site Detection, Part3: Splice Signal\t-----------")
+        #DIDN'T SEEM TO WORK, CHECK HERE<--------------------------------------------
         #Command itself:
         Flame_Main_SPLICECANDIDATES = FF.SPLICESIGNALFUNC(Flame_Main_SPLICECANDIDATES,
                                                           Flame_Main_REF)
@@ -572,4 +604,13 @@ else: #<----------------- Change here
                                     str(Flame_Main_COUNT[2]) + "\t" +
                                     str(Flame_Main_COUNT[3]) + "\t" +
                                     str(Flame_Main_COUNT[4]) + "\n")
+        Flame_Main_OUTPUT.close()
+
+    if args.VERBOSE:
+        Flame_Main_OUTPUT = open("%s.SimulatedGenomeCoverage.txt" %args.OUTPUT, "w+")
+        Flame_Main_OUTPUT.write("Genomic Position" + "\t" +
+                                "Value" + "\n")
+        for Flame_Main_COUNT in Flame_Main_GENEREFERENCE_START:
+            Flame_Main_OUTPUT.write(str(Flame_Main_COUNT[0]) + "\t" +
+                                    str(Flame_Main_COUNT[1]) + "\n")
         Flame_Main_OUTPUT.close()
